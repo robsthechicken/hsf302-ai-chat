@@ -1,0 +1,17 @@
+# Git lưu mọi file text với LF, bất kể máy Mac hay Windows -> diff không bị "đổi cả file".
+* text=auto eol=lf
+
+# Script Windows bắt buộc CRLF, script Unix bắt buộc LF.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+mvnw  text eol=lf
+*.sh  text eol=lf
+
+# File nhị phân: không bao giờ đổi line ending.
+*.jar  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
