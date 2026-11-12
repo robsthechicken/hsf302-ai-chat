@@ -1,50 +1,106 @@
-# AI Chat Web (Spring MVC + Thymeleaf + LangChain4j)
+# Bếp Việt AI — Trợ lý ảo nhà hàng (Mini RAG Chat)
 
-Trang chat với 2 chế độ tách biệt:
-- **AI thường**: hỏi gì trả lời đó.
-- **AI RAG**: trả lời dựa trên tài liệu `.txt` bạn upload.
+Dự án nâng cấp từ `mini-rag-web` theo tài liệu đặc tả được cung cấp. Java 17 / Spring Boot 3.3.5 / Thymeleaf / Bootstrap 5.3.3 / LangChain4j 1.11.0 / H2 file / PDFBox 3.0.3.
 
-Hai model, hai key riêng:
-| Việc | Model | Biến môi trường |
+## Khởi chạy trên máy tính
+
+Cần: **JDK 17 hoặc 21** (không cần cài Maven, repo có sẵn Maven Wrapper `mvnw`), internet để tải dependency lần đầu và dùng AI. Mở terminal tại thư mục chứa `pom.xml`:
+
+```bash
+mkdir -p data
+./mvnw clean test
+./mvnw spring-boot:run
+```
+
+Trên Windows PowerShell, có thể dùng `New-Item -ItemType Directory -Force data` thay `mkdir -p data`.
+
+Truy cập http://localhost:8080/login. Dữ liệu mẫu tự nạp khi database chưa có user.
+
+| Vai trò | Tài khoản demo | Mật khẩu demo |
 |---|---|---|
-| Chat (trả lời) | Groq `llama-3.3-70b-versatile` | `GROQ_API_KEY` |
-| Embedding (tìm đoạn liên quan) | Gemini `gemini-embedding-001` | `GEMINI_API_KEY` |
+| Chủ nhà hàng | `owner` | `owner123` |
+| Khách | `customer1` | `customer123` |
+| Khách | `customer2` | `customer123` |
 
-## Chạy trong IntelliJ
-1. File > Open > chọn `pom.xml` > Open as Project. Đợi Maven tải dependency.
-2. Mở `AiChatApplication.java`, bấm Run một lần (sẽ báo thiếu key, không sao).
-3. Run > Edit Configurations > Environment variables:
-   `GROQ_API_KEY=...;GEMINI_API_KEY=...`
-4. Run lại, mở http://localhost:8080/chat
+Các tài khoản chỉ để demo; không sử dụng mật khẩu này ngoài môi trường học tập.
 
-## Cách thử
-1. Tab **AI thường**: hỏi "Thủ đô của Nhật Bản là gì?" -> trả lời bình thường.
-2. Tab **AI RAG**: upload 2 file trong thư mục `sample-docs/`, rồi hỏi:
-   - Mua bằng MoMo thì bao lâu được hoàn tiền?
-   - Chủ nhật cửa hàng mở đến mấy giờ?
-   - Cửa hàng có bán laptop không? (không có trong tài liệu -> AI phải nói không biết)
-3. Chuyển qua lại giữa hai tab: lịch sử chat của mỗi chế độ tách riêng.
+## Biến môi trường AI
 
-## Cấu trúc (giống shop-dieuao: controller -> service -> impl)
-```
-controller/ChatController          điều phối, không chứa logic AI
-service/NormalChatService (+impl)  AI thường  -> chỉ dùng ChatModel (Groq)
-service/RagChatService    (+impl)  AI RAG     -> EmbeddingModel (Gemini) + ChatModel (Groq)
-service/DocumentService   (+impl)  chia nhỏ + embedding + lưu tài liệu
-config/AiConfig                    tạo 2 model + kho vector (RAM)
-dto/                               ChatMode, ChatMessage, RagAnswer, DocumentInfo
-templates/chat.html                1 trang duy nhất
+Không ghi API key vào source. Thiết lập biến môi trường trước khi khởi động:
+
+**PowerShell**
+```powershell
+$env:GROQ_API_KEY="YOUR_GROQ_KEY"
+$env:GEMINI_API_KEY="YOUR_GEMINI_KEY"
+./mvnw spring-boot:run
 ```
 
-Chỉnh tham số (model, chunk, top-k, ngưỡng điểm) trong `application.properties`.
+**Linux/macOS**
+```bash
+export GROQ_API_KEY="YOUR_GROQ_KEY"
+export GEMINI_API_KEY="YOUR_GEMINI_KEY"
+./mvnw spring-boot:run
+```
 
-## Giới hạn hiện tại
-- Chỉ nhận `.txt`; kho vector lưu RAM nên tắt app là mất tài liệu.
-- Mỗi câu hỏi độc lập (AI không nhớ câu trước). Tài liệu dùng chung cho mọi người truy cập.
-- Trang tải lại sau mỗi lần gửi (không có JavaScript), nên có thể chờ vài giây.
+- **Groq**: chat phía khách, trả lời RAG, phân loại feedback.
+- **Gemini**: embedding, khởi tạo/tái tạo hai kho vector RAM cho góp ý và ghi chú.
+- Không có API key, web và database **vẫn khởi động**; chat sẽ báo thiếu key. Không có key embedding, kho RAG bỏ qua nạp lúc khởi động, tuy nhiên vẫn gửi góp ý và quản lý ghi chú bình thường.
+- Kho vector nằm trong RAM; khi restart với key embedding, ứng dụng tạo lại kho từ dữ liệu H2. `Nạp lại kho tìm kiếm` dùng khi index lỗi hoặc thêm dữ liệu lúc chưa có key.
 
-## Lỗi thường gặp
-- `Thiếu biến môi trường ...`: chưa đặt key trong Run Configuration.
-- 429: hết hạn mức free, chờ một lát.
-- 404 / model not found: đổi tên model trong `application.properties`.
-- Không tải được dependency: đổi `langchain4j.version` trong `pom.xml` sang bản mới hơn.
+## Đường dẫn và chức năng
+
+| Method | Đường dẫn | Quyền | Mục đích |
+|---|---|---|---|
+| GET/POST | `/login` | Công khai | Đăng nhập |
+| POST | `/logout` | Đã đăng nhập | Đăng xuất |
+| GET | `/customer/chat` | CUSTOMER | Chat gợi ý món + gửi góp ý |
+| POST | `/customer/api/chat` | CUSTOMER | JSON `{ "message": "..." }`, trả `{ "answer": "...", "sources": [] }` |
+| POST | `/customer/feedback` | CUSTOMER | Lưu góp ý (form `content`) |
+| GET | `/owner/rag` | OWNER | Hỏi đáp trên kho tìm kiếm |
+| POST | `/owner/api/chat` | OWNER | RAG trả lời JSON kèm nguồn |
+| POST | `/owner/reindex` | OWNER | Tạo lại kho vector |
+| GET | `/owner/feedback` | OWNER | Góp ý và bộ lọc `filter` |
+| POST | `/owner/feedback/classify` | OWNER | Phân loại góp ý chưa gắn nhãn bằng AI |
+| POST | `/owner/feedback/{id}/label` | OWNER | Sửa nhãn bằng form `relevance`, `topic` |
+| GET/POST | `/owner/notes` | OWNER | Xem và tạo ghi chú |
+| POST | `/owner/notes/{id}` | OWNER | Cập nhật ghi chú |
+| POST | `/owner/notes/{id}/delete` | OWNER | Xóa ghi chú |
+| POST | `/owner/notes/import` | OWNER | Nhập `.txt`, `.md`, `.pdf` có chữ |
+| GET/POST | `/owner/persona` | OWNER | Xem và cập nhật persona |
+
+Lỗi API theo dạng JSON `{ "error": "..." }`. Session: `currentUser`; quyền chặn bằng interceptor. Không có chức năng đăng ký hay quản lý thực đơn bằng UI. Chat từng lượt độc lập, lịch sử chỉ hiển thị phía trình duyệt.
+
+## Test và nghiệm thu
+
+```bash
+./mvnw -q -DskipTests compile
+./mvnw test
+./mvnw spring-boot:run
+```
+
+Test trong `src/test/java/demo`: parse label, đăng nhập, prompt khách, đọc file, session/role và HTTP controller với H2 test. Bảng kiểm thử AI thủ công tại `AI_EVALUATION.md`. **Chạy thử tích hợp Groq/Gemini với key thật là bước bắt buộc để xác nhận hành vi AI; test tự động không bảo đảm chất lượng câu trả lời model.**
+
+## Đổi H2 sang MySQL (tùy chọn)
+
+Thêm dependency `com.mysql:mysql-connector-j` scope `runtime`, đổi `spring.datasource.url`, `spring.datasource.username`, `spring.datasource.password` trong `application.properties`, và bỏ driver H2. Theo hướng dẫn mục 4.2 của đặc tả, ví dụ URL `jdbc:mysql://localhost:3306/restaurant?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8`.
+
+## Giả định và khác biệt do đặc tả bị thiếu
+
+**Tệp đặc tả gửi kèm thực tế kết thúc ở mục 10.3**. Những phần được viện dẫn trong tài liệu nhưng không tồn tại trong tệp: 11 (controller), 12 (giao diện), 13.1 (chuỗi thông báo), 14 (test), 16 (tiêu chí hoàn thành), 17 (các bước triển khai). Những phần này được chọn theo phương án nhỏ nhất, thống nhất và công khai ở đây:
+
+1. Quy ước URL như bảng trên, không có bản gốc để đối chiếu.
+2. Chuỗi lỗi/feedback được tập trung trong `demo.web.Messages`, vì danh sách chính xác mục 13.1 không được cung cấp. Chuỗi `RAG_NOT_FOUND` được xác định theo **ghi chú mục 10.2** và dùng đúng `Tôi không tìm thấy thông tin này trong tài liệu.`.
+3. UI là giao diện Thymeleaf/Bootstrap đáp ứng các luồng, không có hình tham chiếu hay ID HTML bắt buộc từ mục 12.
+4. Unit/integration test và bảng đánh giá thủ công do người triển khai tạo, không tự nhận là tương ứng với mục 14 chưa được cung cấp.
+5. Chỉnh hai ký tự bị lỗi mã hóa trong dữ liệu mẫu: `ƒÉn kèm` thành `ăn kèm` và `khƒÉn` thành `khăn`; các nội dung khác giữ theo tài liệu.
+6. `AiModelProvider.chat(system,user)` truyền `SystemMessage` và `UserMessage` riêng biệt thông qua API của LangChain4j 1.11.0; vẫn cần xác nhận lúc compile trong môi trường có Maven.
+
+## Hạn chế quan trọng
+
+- Demo cục bộ, một tiến trình; **không có CSRF protection**, chống brute-force, đổi mật khẩu, HTTPS, triển khai server.
+- Quy tắc prompt giúp giảm prompt injection/hallucination nhưng không triệt tiêu rủi ro. Các kết quả AI phải được đánh giá bằng bộ câu hỏi thủ công.
+- RAG dùng top-K truy hồi, không đủ cơ sở để thống kê tổng số/tỷ lệ toàn bộ góp ý.
+- Lịch sử chat không được chuyển lại cho AI; mỗi lượt độc lập.
+- Kho vector RAM không bền vững; embedding có thể gặp hạn mức/quota 429. Khi có key, tải lại từ DB và cố gắng tái sử dụng embedding nội phiên.
+- File PDF dạng ảnh scan không có OCR; chỉ đọc PDF có chữ.
+- Chưa có quy trình build chạy tự động trên môi trường triển khai này vì môi trường dựng file không có Maven và không thể tải dependency từ Maven Central. **Bản mã nguồn cần được kiểm chứng bằng Maven trong môi trường có mạng trước khi công bố là chạy hoàn chỉnh.**
