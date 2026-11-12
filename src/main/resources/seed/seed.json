@@ -22,73 +22,85 @@
       "name": "Phở bò tái",
       "description": "Nước dùng xương hầm 12 giờ, bò tái mềm, hành ngò",
       "priceVnd": 65000,
-      "available": true
+      "available": true,
+      "imageUrl": "/images/dishes/pho-bo-tai.jpg"
     },
     {
       "name": "Bún chả",
       "description": "Chả nướng than, bún tươi, nước chấm chua ngọt, rau sống",
       "priceVnd": 60000,
-      "available": true
+      "available": true,
+      "imageUrl": "/images/dishes/bun-cha.jpg"
     },
     {
       "name": "Cơm tấm sườn bì chả",
       "description": "Sườn nướng, bì, chả trứng, mỡ hành, nước mắm",
       "priceVnd": 70000,
-      "available": true
+      "available": true,
+      "imageUrl": "/images/dishes/com-tam.jpg"
     },
     {
       "name": "Gỏi cuốn tôm thịt",
       "description": "Tôm, thịt luộc, bún, rau thơm, chấm tương đậu phộng",
       "priceVnd": 45000,
-      "available": true
+      "available": true,
+      "imageUrl": "/images/dishes/goi-cuon-tom-thit.jpg"
     },
     {
       "name": "Gỏi cuốn chay",
       "description": "Đậu hũ, rau củ, bún, rau thơm, chấm tương đậu phộng",
       "priceVnd": 40000,
-      "available": true
+      "available": true,
+      "imageUrl": "/images/dishes/goi-cuon-chay.jpg"
     },
     {
       "name": "Cháo gà",
       "description": "Cháo nóng, nhuyễn, gà xé, hành phi, gừng",
       "priceVnd": 50000,
-      "available": true
+      "available": true,
+      "imageUrl": "/images/dishes/chao-ga.jpg"
     },
     {
       "name": "Canh chua cá lóc",
       "description": "Cá lóc, me, thơm, cà chua, đậu bắp, giá, rau om",
       "priceVnd": 85000,
-      "available": true
+      "available": true,
+      "imageUrl": "/images/dishes/canh-chua-ca-loc.jpg"
     },
     {
       "name": "Bánh xèo",
       "description": "Bánh giòn nhân tôm thịt giá, ăn kèm rau sống và nước mắm",
       "priceVnd": 65000,
-      "available": true
+      "available": true,
+      "imageUrl": "/images/dishes/banh-xeo.jpg"
     },
     {
       "name": "Canh nấm",
       "description": "Nấm rơm, nấm bào ngư, rau cải, nước dùng rau củ (chay)",
       "priceVnd": 45000,
-      "available": true
+      "available": true,
+      "imageUrl": "/images/dishes/canh-nam.jpg"
     },
     {
       "name": "Đậu hũ sốt cà",
       "description": "Đậu hũ chiên sốt cà chua, hành lá (chay)",
       "priceVnd": 50000,
-      "available": true
+      "available": true,
+      "imageUrl": "/images/dishes/dau-hu-sot-ca.jpg"
     },
     {
       "name": "Chè hạt sen",
       "description": "Hạt sen long nhãn, ngọt nhẹ, dùng nóng hoặc nguội",
       "priceVnd": 30000,
-      "available": true
+      "available": true,
+      "imageUrl": "/images/dishes/che-hat-sen.jpg"
     },
     {
       "name": "Bánh flan",
       "description": "Bánh flan caramel",
       "priceVnd": 25000,
-      "available": false
+      "available": false,
+      "imageUrl": "/images/dishes/banh-flan.jpg"
     }
   ],
   "feedbacks": [

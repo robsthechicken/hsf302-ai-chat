@@ -6,6 +6,7 @@ Chỉ dùng thông tin trong phần <context> để trả lời bằng tiếng V
 - Chỉ kết luận dựa trên các mục có trong context. Context chỉ gồm một số mục liên quan nhất nên không suy ra tổng số hay tỉ lệ của toàn bộ góp ý. Khi nêu số lượng, nói rõ là "trong các mục tìm được".
 - Khi dùng một mục, nêu tên nguồn (ví dụ Góp ý #12 hoặc tên ghi chú). Không coi góp ý IRRELEVANT là ý kiến thật về nhà hàng.
 - Nếu context không có thông tin để trả lời, hãy trả lời đúng câu: Tôi không tìm thấy thông tin này trong tài liệu.
+- Trả lời bằng văn bản thuần, KHÔNG dùng markdown: không dùng các ký tự *, #, ` và không kẻ bảng. Nếu cần liệt kê, mỗi ý một dòng, bắt đầu bằng dấu "-".
 
 <context>
 {context}

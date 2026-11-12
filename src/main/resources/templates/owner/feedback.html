@@ -1,11 +1,85 @@
-<!DOCTYPE html><html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Góp ý khách hàng • Bếp Việt AI</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link th:href="@{/css/app.css}" rel="stylesheet"></head><body>
-<div th:replace="~{fragments :: nav}"></div><main class="container app-container page-space"><div th:replace="~{fragments :: alerts}"></div>
-<header class="page-heading"><div><div class="eyebrow">PHẢN HỒI KHÁCH HÀNG</div><h1>Lắng nghe thực khách</h1><p class="muted">Xem góp ý, phân loại bằng AI hoặc tự điều chỉnh nhãn.</p></div><form th:action="@{/owner/feedback/classify}" method="post"><button class="btn btn-primary action-btn" type="submit">✳ Phân loại <span th:text="|(${unclassifiedCount})|">(0)</span></button></form></header>
-<div class="surface p-4"><form th:action="@{/owner/feedback}" method="get" class="filter-form"><label for="filter" class="form-label mb-0">Lọc theo nhãn</label><select id="filter" class="form-select" name="filter"><option value="">Tất cả góp ý</option><option th:each="r : ${relevances}" th:value="${r}" th:selected="${r == currentFilter}" th:text="${@displayNames.relevance(r)}">Nhãn</option></select><button class="btn btn-outline-primary" type="submit">Lọc</button></form>
-<div class="table-responsive"><table class="table align-middle feedback-table"><thead><tr><th>Khách hàng / Nội dung</th><th>Hiện tại</th><th>Điều chỉnh nhãn</th></tr></thead><tbody>
-<tr th:each="f : ${feedbacks}"><td style="min-width:270px"><div class="tiny-muted" th:text="|#${f.id} · ${f.authorName} · ${#temporals.format(f.createdAt, 'dd/MM/yyyy HH:mm')}|">#1 · customer1</div><div class="feedback-content" th:text="${f.content}">Nội dung góp ý</div></td>
-<td><span class="label-pill" th:text="${@displayNames.relevance(f.relevance)}">Chưa phân loại</span><div class="small muted mt-1" th:text="${@displayNames.topic(f.topic)}">Món ăn</div><div class="tiny-muted" th:text="${@displayNames.labelSource(f.labelSource)}">AI</div></td>
-<td><form method="post" th:action="@{/owner/feedback/{id}/label(id=${f.id})}" class="label-form"><select class="form-select form-select-sm" name="relevance" aria-label="Độ liên quan"><option th:each="r : ${relevances}" th:value="${r}" th:text="${@displayNames.relevance(r)}" th:selected="${r == f.relevance}"></option></select><select class="form-select form-select-sm" name="topic" aria-label="Chủ đề"><option value="">Không xác định</option><option th:each="t : ${topics}" th:value="${t}" th:text="${@displayNames.topic(t)}" th:selected="${t == f.topic}"></option></select><button class="btn btn-sm btn-outline-primary" type="submit">Lưu</button></form></td></tr>
-<tr th:if="${#lists.isEmpty(feedbacks)}"><td colspan="3" class="text-center muted py-5">Không có góp ý phù hợp bộ lọc.</td></tr></tbody></table></div></div></main>
-<footer class="site-footer">Bếp Việt AI · Quản lý nhà hàng</footer><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Góp ý khách hàng')}"></head>
+<body>
+<header th:replace="~{fragments :: nav}"></header>
+
+<main id="main" class="container app-container page">
+  <div th:replace="~{fragments :: alerts}"></div>
+
+  <div class="page-header">
+    <div>
+      <h1>Góp ý khách hàng</h1>
+      <p th:text="|${#lists.size(feedbacks)} góp ý đang hiển thị · ${unclassifiedCount} chưa phân loại|">
+        0 góp ý đang hiển thị · 0 chưa phân loại</p>
+    </div>
+    <form th:action="@{/owner/feedback/classify}" method="post">
+      <button class="btn btn-primary" type="submit" th:disabled="${unclassifiedCount == 0}">
+        Phân loại bằng AI</button>
+    </form>
+  </div>
+
+  <section class="panel" aria-label="Danh sách góp ý">
+    <form th:action="@{/owner/feedback}" method="get" class="toolbar">
+      <label for="filter" class="form-label mb-0">Lọc theo nhãn</label>
+      <select id="filter" class="form-select" name="filter">
+        <option value="">Tất cả</option>
+        <option th:each="r : ${relevances}" th:value="${r}" th:selected="${r == currentFilter}"
+                th:text="${@displayNames.relevance(r)}">Nhãn</option>
+      </select>
+      <button class="btn btn-outline-primary" type="submit">Lọc</button>
+    </form>
+
+    <div class="table-responsive">
+      <table class="table feedback-table">
+        <thead>
+        <tr>
+          <th scope="col">Góp ý</th>
+          <th scope="col">Nhãn hiện tại</th>
+          <th scope="col">Sửa nhãn</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="f : ${feedbacks}">
+          <td>
+            <div class="feedback-meta"
+                 th:text="|#${f.id} · ${f.authorName} · ${#temporals.format(f.createdAt, 'dd/MM/yyyy HH:mm')}|">
+              #1 · customer1</div>
+            <div class="feedback-content" th:text="${f.content}">Nội dung góp ý</div>
+          </td>
+          <td>
+            <span class="pill" th:classappend="|pill-${f.relevance}|"
+                  th:text="${@displayNames.relevance(f.relevance)}">Chưa phân loại</span>
+            <div class="label-detail" th:if="${f.topic != null}"
+                 th:text="|${@displayNames.topic(f.topic)} · ${@displayNames.labelSource(f.labelSource)}|">
+              Món ăn · AI</div>
+          </td>
+          <td>
+            <form method="post" th:action="@{/owner/feedback/{id}/label(id=${f.id})}" class="label-form">
+              <select class="form-select form-select-sm" name="relevance"
+                      th:aria-label="|Độ liên quan của góp ý #${f.id}|">
+                <option th:each="r : ${relevances}" th:value="${r}" th:selected="${r == f.relevance}"
+                        th:text="${@displayNames.relevance(r)}"></option>
+              </select>
+              <select class="form-select form-select-sm" name="topic"
+                      th:aria-label="|Chủ đề của góp ý #${f.id}|">
+                <option value="">Không xác định</option>
+                <option th:each="t : ${topics}" th:value="${t}" th:selected="${t == f.topic}"
+                        th:text="${@displayNames.topic(t)}"></option>
+              </select>
+              <button class="btn btn-sm btn-outline-primary" type="submit">Lưu</button>
+            </form>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(feedbacks)}">
+          <td colspan="3" class="empty">Không có góp ý nào khớp bộ lọc.</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
