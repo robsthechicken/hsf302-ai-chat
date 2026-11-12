@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark site-nav" th:fragment="nav">
+  <div class="container app-container">
+    <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}"><span class="brand-mark">✳</span> Bếp Việt <span class="brand-subtitle">AI</span></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#siteMenu" aria-label="Mở menu"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="siteMenu">
+      <div class="navbar-nav ms-auto me-3" th:if="${currentUser != null and currentUser.role().name() == 'OWNER'}">
+        <a class="nav-link" th:href="@{/owner/rag}">Hỏi đáp RAG</a><a class="nav-link" th:href="@{/owner/feedback}">Góp ý</a>
+        <a class="nav-link" th:href="@{/owner/notes}">Ghi chú</a><a class="nav-link" th:href="@{/owner/persona}">Giọng điệu</a>
+      </div>
+      <div class="navbar-nav ms-auto me-3" th:if="${currentUser != null and currentUser.role().name() == 'CUSTOMER'}">
+        <a class="nav-link" th:href="@{/customer/chat}">Trợ lý gọi món</a><a class="nav-link" href="/customer/chat#feedback">Gửi góp ý</a>
+      </div>
+      <div class="d-flex align-items-center gap-3" th:if="${currentUser != null}"><span class="small nav-username" th:text="${currentUser.username()}">user</span>
+        <form th:action="@{/logout}" method="post"><button class="btn btn-outline-light btn-sm" type="submit">Đăng xuất</button></form>
+      </div>
+    </div>
+  </div>
+</nav>
+<div th:fragment="alerts" class="flash-area" aria-live="polite">
+  <div th:if="${success}" class="alert alert-success" role="status" th:text="${success}"></div>
+  <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+</div>
+</body>
+</html>
