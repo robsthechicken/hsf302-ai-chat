@@ -21,3 +21,6 @@ desktop.ini
 *.log
 .env
 .playwright-mcp/
+
+# H2 database file (app tạo ở ./data khi chạy)
+/data/
