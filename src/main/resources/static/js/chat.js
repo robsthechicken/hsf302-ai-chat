@@ -1,5 +1,6 @@
 // Chat dùng chung cho trang khách (/customer/api/chat) và trang chủ quán (/owner/api/chat).
-// Mọi nội dung đều gán bằng textContent (không dùng innerHTML) để chặn XSS từ câu trả lời của AI.
+// Câu trả lời của AI được render markdown (marked) rồi lọc qua DOMPurify trước khi gán innerHTML để chặn XSS;
+// mọi nội dung khác (câu của người dùng, lỗi, nguồn) gán bằng textContent.
 (() => {
   'use strict';
   const panel = document.querySelector('[data-chat-endpoint]');
@@ -17,7 +18,13 @@
     const article = document.createElement('div');
     article.className = 'bubble ' + kind;
     const content = document.createElement('div');
-    content.textContent = text;
+    // Chỉ render markdown cho câu trả lời thật của bot; thiếu thư viện (CDN lỗi) thì hiện văn bản thuần
+    if (kind === 'bot' && window.marked && window.DOMPurify) {
+      content.className = 'md';
+      content.innerHTML = DOMPurify.sanitize(marked.parse(text, { breaks: true }));
+    } else {
+      content.textContent = text;
+    }
     article.appendChild(content);
 
     if (Array.isArray(sources) && sources.length) {
@@ -45,6 +52,14 @@
     messages.scrollTop = messages.scrollHeight;
     return article;
   }
+
+  // Nạp lại lịch sử chat lưu trong session (reload/chuyển trang không mất); chặn gửi tới khi nạp xong để giữ đúng thứ tự
+  busy = true;
+  fetch(endpoint, { credentials: 'same-origin' })
+    .then(r => (r.ok ? r.json() : []))
+    .then(entries => entries.forEach(e => bubble(e.text, e.role === 'human' ? 'human' : 'bot', e.sources)))
+    .catch(() => {})
+    .finally(() => { busy = false; });
 
   // Enter để gửi, Shift+Enter để xuống dòng
   input.addEventListener('keydown', e => {
