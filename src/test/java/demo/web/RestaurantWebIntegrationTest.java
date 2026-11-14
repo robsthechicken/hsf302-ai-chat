@@ -20,6 +20,14 @@ class RestaurantWebIntegrationTest {
             .andExpect(status().isUnauthorized()).andExpect(jsonPath("$.error").exists());
         mvc.perform(get("/customer/chat")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/login"));
     }
+    @Test void loginClearsPreviousChatHistory() throws Exception {
+        var session=new MockHttpSession();
+        session.setAttribute(demo.web.api.ChatHistory.SESSION_KEY,new java.util.ArrayList<>(java.util.List.of(
+            new demo.web.api.ChatHistory.Entry("human","câu của user trước",java.util.List.of()))));
+        mvc.perform(post("/login").session(session).param("username","customer1").param("password","customer123"))
+            .andExpect(status().is3xxRedirection());
+        mvc.perform(get("/customer/api/chat").session(session)).andExpect(status().isOk()).andExpect(content().json("[]"));
+    }
     @Test void ownerCanAccessOwnerPagesButNotCustomer() throws Exception {
         MvcResult login=mvc.perform(post("/login").param("username","owner").param("password","owner123"))
             .andExpect(status().is3xxRedirection()).andReturn();

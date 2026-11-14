@@ -12,4 +12,5 @@ public interface FeedbackRepository extends JpaRepository<Feedback,Long> {
     List<Feedback> findByRelevanceWithAuthor(@Param("rel") Relevance rel);
     List<Feedback> findByRelevanceOrderByIdAsc(Relevance relevance);
     long countByRelevance(Relevance relevance);
+    List<Feedback> findTop5ByOrderByCreatedAtDescIdDesc();
 }

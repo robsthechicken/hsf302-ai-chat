@@ -25,6 +25,7 @@ public class AuthController {
             SessionUser user=auth.login(username,password);
             req.getSession(true);
             req.changeSessionId();
+            req.getSession().removeAttribute(demo.web.api.ChatHistory.SESSION_KEY); // không lộ chat của user trước
             req.getSession().setAttribute(RoleInterceptor.SESSION_KEY,user);
             return "redirect:/";
         }catch(IllegalArgumentException e){model.addAttribute("error",e.getMessage());return "login";}

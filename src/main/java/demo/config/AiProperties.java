@@ -14,7 +14,7 @@ public record AiProperties(@DefaultValue Chat chat, @DefaultValue Embedding embe
     public record Chat(
             @DefaultValue("groq") String provider,
             String apiKey,
-            @DefaultValue("llama-3.3-70b-versatile") String model,
+            @DefaultValue("openai/gpt-oss-120b") String model,
             String baseUrl,
             @DefaultValue("0.2") double temperature) {
     }

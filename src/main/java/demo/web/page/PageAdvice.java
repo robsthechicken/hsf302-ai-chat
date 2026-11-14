@@ -10,4 +10,8 @@ public class PageAdvice {
         var session=request.getSession(false);
         return session!=null&&session.getAttribute(RoleInterceptor.SESSION_KEY) instanceof SessionUser user?user:null;
     }
+    /** Đường dẫn hiện tại để thanh menu đánh dấu trang đang mở (Thymeleaf 3.1 không cho đọc request trong template). */
+    @ModelAttribute("currentPath") public String currentPath(HttpServletRequest request){
+        return request.getRequestURI().substring(request.getContextPath().length());
+    }
 }

@@ -31,9 +31,10 @@ public class DataSeeder implements ApplicationRunner {
     }
     @Override public void run(ApplicationArguments args){
         try{
-            if(!enabled||users.count()>0)return;
+            if(!enabled)return;
             try(var input=new ClassPathResource("seed/seed.json").getInputStream()){
                 JsonNode seed=mapper.readTree(input);
+                if(users.count()>0){backfillDishImages(seed);return;}
                 transactions.executeWithoutResult(tx->{
                     Map<String,AppUser> byName=new HashMap<>();
                     for(var u:seed.path("users")){
@@ -41,7 +42,7 @@ public class DataSeeder implements ApplicationRunner {
                         byName.put(user.getUsername(),user);
                     }
                     personas.save(new Persona(seed.path("persona").asText()));
-                    for(var d:seed.path("dishes"))dishes.save(new Dish(d.path("name").asText(),d.path("description").asText(),d.path("priceVnd").asInt(),d.path("available").asBoolean()));
+                    for(var d:seed.path("dishes"))dishes.save(new Dish(d.path("name").asText(),d.path("description").asText(),d.path("priceVnd").asInt(),d.path("available").asBoolean(),d.path("imageUrl").asText(null)));
                     int n=0;
                     for(var f:seed.path("feedbacks")){
                         var feedback=new Feedback(byName.get(f.path("author").asText()),f.path("content").asText());
@@ -56,5 +57,20 @@ public class DataSeeder implements ApplicationRunner {
                 });
             }
         }catch(Exception e){log.warn("Không thể nạp dữ liệu mẫu: {}",e.getMessage());}
+    }
+    /**
+     * DB tạo trước khi có cột image_url: món nào chưa có ảnh thì lấy ảnh theo TÊN món trong seed.json.
+     * Không ghi đè ảnh đã có; món không có trong seed giữ nguyên (giao diện dùng ảnh mặc định).
+     */
+    void backfillDishImages(JsonNode seed){
+        Map<String,String> imageByName=new HashMap<>();
+        for(var d:seed.path("dishes"))
+            if(d.hasNonNull("imageUrl"))imageByName.put(d.path("name").asText(),d.path("imageUrl").asText());
+        int filled=0;
+        for(Dish dish:dishes.findAll()){
+            String url=imageByName.get(dish.getName());
+            if(dish.getImageUrl()==null&&url!=null){dish.setImageUrl(url);dishes.save(dish);filled++;}
+        }
+        if(filled>0)log.info("Đã bổ sung ảnh cho {} món trong DB cũ",filled);
     }
 }

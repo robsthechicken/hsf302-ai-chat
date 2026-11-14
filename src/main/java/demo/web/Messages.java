@@ -12,6 +12,9 @@ public final class Messages {
     public static final String MESSAGE_TOO_LONG="Câu hỏi không được dài quá 4000 ký tự.";
     public static final String MENU_EMPTY="Hiện tại nhà hàng chưa có món ăn để gợi ý.";
     public static final String AI_EMPTY_ANSWER="Trợ lý chưa thể trả lời lúc này. Vui lòng thử lại.";
+    public static final String AI_RATE_LIMIT="Trợ lý đang quá tải (hết hạn mức miễn phí). Vui lòng thử lại sau khoảng 1 phút.";
+    public static final String AI_UNAVAILABLE="Trợ lý tạm thời không hoạt động. Vui lòng báo nhân viên nhà hàng.";
+    public static final String UNEXPECTED_ERROR="Có lỗi xảy ra. Vui lòng thử lại.";
     public static final String RAG_EMPTY_STORE="Kho tìm kiếm hiện chưa có dữ liệu. Vui lòng nạp lại kho.";
     public static final String RAG_NOT_FOUND="Tôi không tìm thấy thông tin này trong tài liệu.";
     public static final String FEEDBACK_NOT_FOUND="Không tìm thấy góp ý.";

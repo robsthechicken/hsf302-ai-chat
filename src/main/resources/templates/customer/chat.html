@@ -1,17 +1,118 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Trợ lý gọi món • Bếp Việt AI</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><link th:href="@{/css/app.css}" rel="stylesheet"></head>
-<body><div th:replace="~{fragments :: nav}"></div><main class="container app-container page-space">
-  <div th:replace="~{fragments :: alerts}"></div>
-  <header class="page-heading"><div><div class="eyebrow">DÀNH CHO THỰC KHÁCH</div><h1>Hôm nay bạn muốn ăn gì?</h1><p class="muted">Tìm một món ngon từ thực đơn Bếp Việt, cùng người bạn đồng hành AI.</p></div><span class="chip">✳ Gợi ý món thông minh</span></header>
-  <div class="row g-4"><div class="col-lg-7"><section class="surface chat-panel" data-chat-endpoint="/customer/api/chat">
-     <div class="panel-header"><div class="avatar">✳</div><div><strong>Trợ lý Bếp Việt</strong><div class="tiny-muted">Sẵn sàng gợi ý món từ thực đơn</div></div><span class="online-indicator ms-auto">● Trực tuyến</span></div>
-     <div id="chatMessages" class="chat-messages" aria-live="polite"><div class="bubble bot">Xin chào quý khách! Tôi có thể giúp quý khách chọn món Việt phù hợp với khẩu vị hôm nay.</div></div>
-     <form id="chatForm" class="chat-compose"><label class="visually-hidden" for="chatInput">Câu hỏi</label><textarea id="chatInput" class="form-control" rows="2" maxlength="4000" placeholder="Ví dụ: Tôi muốn ăn chay, quán có món gì?" required></textarea><button id="sendChat" class="btn btn-primary action-btn" type="submit">Gửi <span aria-hidden="true">↗</span></button></form>
-   </section></div><div class="col-lg-5"><section class="surface p-4 mb-4"><div class="section-kicker">THỰC ĐƠN HÔM NAY</div><h2 class="section-title">Các món đang phục vụ</h2><div class="menu-list">
-      <div class="menu-item" th:each="dish : ${dishes}"><div><strong th:text="${dish.name}">Phở bò</strong><div class="tiny-muted" th:text="${dish.description}">Mô tả</div></div><div class="menu-price" th:text="|${#numbers.formatInteger(dish.priceVnd, 1, 'POINT')} đ|">65.000 đ</div></div>
-      <p class="muted" th:if="${#lists.isEmpty(dishes)}">Hiện chưa có món ăn được phục vụ.</p>
-   </div></section>
-   <section class="surface p-4" id="feedback"><div class="section-kicker">LẮNG NGHE BẠN</div><h2 class="section-title">Gửi góp ý</h2><p class="muted">Chia sẻ trải nghiệm của bạn để chúng tôi cải thiện từng ngày.</p>
-     <form th:action="@{/customer/feedback}" method="post"><label for="feedbackText" class="form-label">Nội dung góp ý</label><textarea class="form-control mb-3" id="feedbackText" name="content" maxlength="1000" rows="4" required placeholder="Món ăn, phục vụ, thời gian chờ..."></textarea><button type="submit" class="btn btn-outline-primary w-100">Gửi góp ý</button></form>
-   </section></div></div></main><footer class="site-footer">Bếp Việt AI · Trợ lý ảo nhà hàng</footer><script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script><script th:src="@{/js/chat.js}"></script></body></html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Thực đơn')}"></head>
+<body>
+<header th:replace="~{fragments :: nav}"></header>
+
+<main id="main">
+  <!-- Banner -->
+  <section class="hero" aria-labelledby="heroTitle">
+    <img class="hero-img" th:src="@{/images/hero.jpg}" src="/images/hero.jpg" alt=""
+         width="1600" height="800" fetchpriority="high">
+    <div class="container app-container hero-content">
+      <h1 id="heroTitle">Bếp Việt</h1>
+      <p>Phở, bún, cơm tấm và các món quen thuộc, nấu mới mỗi ngày.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="#menu">Xem thực đơn</a>
+        <a class="btn btn-on-photo btn-lg" href="#assistant">Hỏi trợ lý gọi món</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="container app-container">
+    <div th:replace="~{fragments :: alerts}"></div>
+  </div>
+
+  <!-- Thực đơn -->
+  <section class="section" id="menu" aria-labelledby="menuTitle">
+    <div class="container app-container">
+      <div class="section-head">
+        <h2 class="section-title" id="menuTitle">Thực đơn hôm nay</h2>
+        <p th:text="|${#lists.size(dishes)} món đang phục vụ. Bấm “Hỏi về món này” để trợ lý tư vấn thêm.|">
+          0 món đang phục vụ.</p>
+      </div>
+
+      <ul class="dish-grid" th:unless="${#lists.isEmpty(dishes)}">
+        <li th:each="dish : ${dishes}">
+          <article class="dish-card">
+            <!-- Ảnh minh hoạ; tên món đã có ở dưới nên alt để trống -->
+            <div class="dish-photo">
+              <img th:src="@{${dish.imageUrl ?: '/images/dishes/default.jpg'}}" src="/images/dishes/default.jpg"
+                   alt="" width="640" height="480" loading="lazy">
+            </div>
+            <div class="dish-body">
+              <div class="dish-top">
+                <h3 class="dish-name" th:text="${dish.name}">Phở bò</h3>
+                <span class="dish-price" th:text="|${#numbers.formatInteger(dish.priceVnd, 1, 'POINT')} đ|">65.000 đ</span>
+              </div>
+              <p class="dish-desc" th:if="${dish.description}" th:text="${dish.description}">Mô tả</p>
+              <button type="button" class="dish-ask"
+                      th:attr="data-question=|Món ${dish.name} có gì đặc biệt? Hợp với người như thế nào?|"
+                      th:aria-label="|Hỏi trợ lý về món ${dish.name}|">Hỏi về món này</button>
+            </div>
+          </article>
+        </li>
+      </ul>
+      <p class="empty" th:if="${#lists.isEmpty(dishes)}">Hiện chưa có món nào đang phục vụ.</p>
+    </div>
+  </section>
+
+  <!-- Trợ lý + góp ý -->
+  <section class="section section-alt" id="assistant" aria-labelledby="assistantTitle">
+    <div class="container app-container">
+      <div class="section-head">
+        <h2 class="section-title" id="assistantTitle">Chưa biết ăn gì?</h2>
+        <p>Kể cho trợ lý khẩu vị hoặc tình trạng của bạn hôm nay. Trợ lý chỉ gợi ý những món có trong thực đơn.</p>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-lg-7">
+          <!-- chat.js đọc data-chat-endpoint và các id chatForm / chatInput / chatMessages / sendChat -->
+          <div class="panel chat" data-chat-endpoint="/customer/api/chat">
+            <div class="panel-head">
+              <h3>Trợ lý gọi món</h3>
+            </div>
+            <div id="chatMessages" class="chat-messages" aria-live="polite">
+              <div class="bubble bot">Chào quý khách. Quý khách muốn dùng món nước, món khô hay món chay?</div>
+            </div>
+            <form id="chatForm" class="chat-compose">
+              <label class="visually-hidden" for="chatInput">Câu hỏi</label>
+              <textarea id="chatInput" class="form-control" rows="2" maxlength="4000" required
+                        placeholder="Ví dụ: Tôi muốn ăn chay, quán có món gì?"></textarea>
+              <button id="sendChat" class="btn btn-primary" type="submit">Gửi</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="panel" id="feedback">
+            <div class="panel-head">
+              <h3>Góp ý cho nhà hàng</h3>
+            </div>
+            <form class="panel-body" th:action="@{/customer/feedback}" method="post">
+              <label for="feedbackText" class="form-label">Bạn thấy bữa ăn thế nào?</label>
+              <textarea class="form-control" id="feedbackText" name="content" maxlength="1000" rows="6" required
+                        aria-describedby="feedbackHelp" placeholder="Món ăn, phục vụ, thời gian chờ..."></textarea>
+              <div id="feedbackHelp" class="form-text">Tối đa 1000 ký tự.</div>
+              <button type="submit" class="btn btn-outline-primary mt-3">Gửi góp ý</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container app-container d-flex flex-wrap justify-content-between gap-2">
+    <span class="brand">Bếp Việt</span>
+    <span>Ảnh minh hoạ từ <a href="https://unsplash.com" rel="noopener">Unsplash</a></span>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+<script th:src="@{/js/chat.js}"></script>
+</body>
+</html>
