@@ -61,6 +61,30 @@ class RestaurantWebIntegrationTest {
         var owner=(MockHttpSession)login.getRequest().getSession(false);
         mvc.perform(get("/customer;x=1/chat").session(owner)).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/"));
     }
+    @Test void invalidPersonaKeepsDraftAndStoredPersona() throws Exception {
+        var login=mvc.perform(post("/login").param("username","owner").param("password","owner123")).andReturn();
+        var session=(MockHttpSession)login.getRequest().getSession(false);
+        String before=personas.get();
+        for(String draft:java.util.List.of("x".repeat(2001),"   ")) {
+            mvc.perform(post("/owner/persona").session(session).param("content",draft))
+                .andExpect(status().isOk()).andExpect(view().name("owner/persona"))
+                .andExpect(model().attribute("persona",draft)).andExpect(model().attributeExists("error"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString(draft)));
+            assertEquals(before,personas.get());
+        }
+    }
+    @Test void personaAtLimitSavesSuccessfully() throws Exception {
+        var login=mvc.perform(post("/login").param("username","owner").param("password","owner123")).andReturn();
+        var session=(MockHttpSession)login.getRequest().getSession(false);
+        String before=personas.get();
+        String draft="x".repeat(2000);
+        try {
+            mvc.perform(post("/owner/persona").session(session).param("content",draft))
+                .andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/owner/persona"))
+                .andExpect(flash().attributeExists("success"));
+            assertEquals(draft,personas.get());
+        } finally {personas.update(before);}
+    }
     @Test void emptyApiMessageHasJsonError() throws Exception {
         MvcResult login=mvc.perform(post("/login").param("username","customer1").param("password","customer123")).andReturn();
         var session=(MockHttpSession)login.getRequest().getSession(false);

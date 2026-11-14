@@ -65,9 +65,13 @@ public class OwnerPageController {
         return "redirect:/owner/notes";
     }
     @GetMapping("/persona") public String persona(Model model){model.addAttribute("persona",persona.get());return "owner/persona";}
-    @PostMapping("/persona") public String personaUpdate(@RequestParam String content,RedirectAttributes flash){
+    @PostMapping("/persona") public String personaUpdate(@RequestParam String content,Model model,RedirectAttributes flash){
         try{persona.update(content);flash.addFlashAttribute("success","Đã lưu giọng điệu trợ lý.");}
-        catch(IllegalArgumentException e){flash.addFlashAttribute("error",e.getMessage());}
+        catch(IllegalArgumentException e){
+            model.addAttribute("error",e.getMessage());
+            model.addAttribute("persona",content);
+            return "owner/persona";
+        }
         return "redirect:/owner/persona";
     }
 }

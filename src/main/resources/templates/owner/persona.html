@@ -23,10 +23,11 @@
         </div>
         <form class="panel-body" method="post" th:action="@{/owner/persona}">
           <label for="personaContent" class="form-label">Nội dung</label>
-          <textarea id="personaContent" name="content" class="form-control" rows="8" maxlength="2000" required
-                    aria-describedby="personaHelp" th:text="${persona}">Persona</textarea>
+          <textarea id="personaContent" name="content" class="form-control" rows="8" required
+                    aria-describedby="personaHelp personaCount" th:text="${persona}">Persona</textarea>
           <div id="personaHelp" class="form-text">
             Chỉ nên mô tả phong thái, cách xưng hô và từ ngữ. Tối đa 2000 ký tự.</div>
+          <div id="personaCount" class="form-text" aria-live="polite"></div>
           <button class="btn btn-primary mt-3" type="submit">Lưu</button>
         </form>
       </section>
@@ -34,6 +35,7 @@
   </div>
 </main>
 
+<script th:src="@{/js/persona.js}" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
